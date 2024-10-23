@@ -1,13 +1,13 @@
 # Cookie Consent and URL Parameter Processor
 
-This Google Tag Manager custom tag checks for consent before setting a cookie based on either a URL parameter or a default value. The tag will only set the cookie if the user has given the required consent. If a cookie already exists, it will not be overwritten.
+This Google Tag Manager custom tag checks for consent before setting a cookie based on either a URL parameter or a default value. The tag will only set the cookie if the user has given the required consent. If a cookie already exists, it will not be overwritten. 
 
 ## How It Works
 
 ### Flow Overview:
 1. **Check for Consent**: 
    - The tag compares the value of the user-provided consent variable (`consent_var`) with a predefined consent value (`consent_value`). 
-   - If the values match, indicating consent has been given, the tag will proceed to set a cookie.
+   - If the values match, consent has been given, the tag will proceed to set a cookie.
    
 2. **Check for Existing Cookie**:
    - Before setting the cookie, the tag checks if the cookie (`data.cookie_name`) already exists.

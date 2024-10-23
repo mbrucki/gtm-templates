@@ -5,12 +5,12 @@
   "id": "cvt_temp_public_id",
   "version": 1,
   "securityGroups": [],
-  "displayName": "Identity Orchestrator",
+  "displayName": "Anonymous Identity Orchestrator",
   "brand": {
-    "id": "brand_dummy",
-    "displayName": ""
+    "id": "Mariusz Brucki",
+    "displayName": "Mariusz Brucki"
   },
-  "description": "",
+  "description": "The tag sets a cookie with the user anonymous id",
   "containerContexts": [
     "WEB"
   ]
@@ -39,16 +39,40 @@ ___TEMPLATE_PARAMETERS___
     "simpleValueType": true
   },
   {
-    "type": "TEXT",
-    "name": "consent_var",
-    "displayName": "Consent variable",
-    "simpleValueType": true
+    "type": "CHECKBOX",
+    "name": "consent_checkbox",
+    "checkboxText": "Check user\u0027s consent",
+    "simpleValueType": true,
+    "help": "The tag will proceed with setting up a cookie only if there is a consent for analytics."
   },
   {
-    "type": "TEXT",
-    "name": "consent_value",
-    "displayName": "Consent value",
-    "simpleValueType": true
+    "type": "GROUP",
+    "name": "consent_group",
+    "displayName": "",
+    "groupStyle": "NO_ZIPPY",
+    "subParams": [
+      {
+        "type": "TEXT",
+        "name": "consent_var",
+        "displayName": "Consent variable",
+        "simpleValueType": true,
+        "help": "Variable storing the information about the user\u0027s consent"
+      },
+      {
+        "type": "TEXT",
+        "name": "consent_value",
+        "displayName": "Consent value",
+        "simpleValueType": true,
+        "help": "Expected value of the consent variable when a user gives consent for tracking"
+      }
+    ],
+    "enablingConditions": [
+      {
+        "paramName": "consent_checkbox",
+        "paramValue": true,
+        "type": "EQUALS"
+      }
+    ]
   }
 ]
 
@@ -78,8 +102,8 @@ function setCustomCookie(cname, cvalue, domain, exdays) {
     }
 
     const currentTimeMillis = getTimestampMillis();
-    const expiresMillis = currentTimeMillis + (exdays * 24 * 60 * 60 * 1000); 
-    const expiresSeconds = Math.floor(expiresMillis / 1000); 
+    const expiresMillis = currentTimeMillis + (exdays * 24 * 60 * 60 * 1000);
+    const expiresSeconds = Math.floor(expiresMillis / 1000);
 
     // Always add a dot before the domain
     const formattedDomain = '.' + domain;
@@ -94,7 +118,7 @@ function getParameterByName(name) {
         data.gtmOnFailure();
         return "";
     }
-    
+
     const queryParams = getQueryParameters(name);
     const paramValue = queryParams ? queryParams[0] || "" : "";
 
@@ -104,16 +128,36 @@ function getParameterByName(name) {
 // Direct consent comparison
 const consentVar = data.consent_var;  // Value provided in the UI
 const consentValue = data.consent_value;  // Value provided in the UI
+const consentCheckbox = data.consent_checkbox;  // Consent checkbox provided in the UI
 
 // Check if the cookie already exists
 const existingCookie = getCookieValues(data.cookie_name)[0] || null;
 if (existingCookie) {
     data.gtmOnSuccess();
 } else {
-    // Compare consent values
-    if (makeString(consentVar) === makeString(consentValue)) {
+    // Proceed with consent check only if consentCheckbox is true
+    if (consentCheckbox === true) {
+        // Compare consent values
+        if (makeString(consentVar) === makeString(consentValue)) {
+            let cookieValue = getParameterByName(data.cookie_name);
+
+            if (cookieValue) {
+                // Set the cookie based on URL parameter
+                setCustomCookie(data.cookie_name, cookieValue, data.cookie_domain);
+            } else {
+                // Use the default cookie value if not found in the URL
+                cookieValue = data.cookie_value;
+                setCustomCookie(data.cookie_name, cookieValue, data.cookie_domain);
+            }
+
+            data.gtmOnSuccess();
+        } else {
+            data.gtmOnFailure();
+        }
+    } else {
+        // If consentCheckbox is not true, set the cookie always
         let cookieValue = getParameterByName(data.cookie_name);
-        
+
         if (cookieValue) {
             // Set the cookie based on URL parameter
             setCustomCookie(data.cookie_name, cookieValue, data.cookie_domain);
@@ -122,10 +166,8 @@ if (existingCookie) {
             cookieValue = data.cookie_value;
             setCustomCookie(data.cookie_name, cookieValue, data.cookie_domain);
         }
-        
+
         data.gtmOnSuccess();
-    } else {
-        data.gtmOnFailure();
     }
 }
 
@@ -261,6 +303,6 @@ scenarios: []
 
 ___NOTES___
 
-Created on 10/10/2024, 15:52:26
+Created on 23/10/2024, 09:36:06
 
 

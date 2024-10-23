@@ -6,6 +6,10 @@ ___INFO___
   "version": 1,
   "securityGroups": [],
   "displayName": "UUID v4 Generator",
+  "brand": {
+    "id": "Mariusz Brucki",
+    "displayName": "Mariusz Brucki"
+  },
   "description": "Generates and stores a unique UUID v4 once per page_view.",
   "containerContexts": [
     "WEB"
