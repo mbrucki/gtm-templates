@@ -26,3 +26,14 @@ window.dataLayer.push({
     'existing_user': true,
     'triggered_event': 'petition_signup'
 });
+```
+
+## Installation
+
+1. Download the `SHA256 Hasher.tpl` file
+2. In your GTM container go to `Templates`
+3. Click `New` in the `Tag Templates` section
+4. Click the 3 dots in the right top corner and click `Import`
+5. Choose the file and save the tag
+6. In the end add a new tag by choosing the `SHA256 Hasher` from the `Custom` section of the Tag Types.
+7. Setup, save, debug and publish

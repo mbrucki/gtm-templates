@@ -69,13 +69,15 @@ Suppose a website needs to set a unique user identifier (UUID) as a cookie, but 
 - **Scenario 3**: The user visits the page without giving consent. No cookie will be set.
 - **Scenario 4**: The user visits the page, and the cookie already exists. The tag does nothing, ensuring the existing cookie is preserved.
 
-## Permissions
+## Installation
 
-This template requires the following permissions:
-
-- **set_cookies**: To set cookies.
-- **get_cookies**: To read cookies.
-- **get_url**: To read URL parameters.
+1. Download the `Anonymous Identity Orchestrator.tpl` file
+2. In your GTM container go to `Templates`
+3. Click `New` in the `Tag Templates` section
+4. Click the 3 dots in the right top corner and click `Import`
+5. Choose the file and save the tag
+6. In the end add a new tag by choosing the `Anonymous Identity Orchestrator` from the `Custom` section of the Tag Types.
+7. Setup the tag, save, debug and publish
 
 ## Notes
 
