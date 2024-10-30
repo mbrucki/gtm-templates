@@ -32,16 +32,19 @@ This custom macro for Google Tag Manager generates a unique UUID v4 (Universally
 
 f47ac10b-58cc-4372-a567-0e02b2c3d479
 
-
-## Permissions
-
-This template requires access to `templateStorage` to store and retrieve the UUID value. The following permission is required:
-
-- **access_template_storage**: Used to store and retrieve the UUID v4 value across executions during the same `page_view`.
-
 ## Testing
 
 This template has no specific test scenarios defined, but it can be tested by:
 - Verifying that the UUID is consistent across the same page view.
 - Ensuring that a new UUID is generated for each new page view.
+
+## Installation
+
+1. Download the `UUID v4 Generator.tpl` file
+2. In your GTM container go to `Templates`
+3. Click `New` in the `Variables Templates` section
+4. Click the 3 dots in the right top corner and click `Import`
+5. Choose the file and save the tag
+6. In the end add a new tag by choosing the `UUID v4 Generator` from the `Custom` section of the Variable Types.
+7. Save, debug and publish
 

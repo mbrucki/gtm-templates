@@ -29,3 +29,13 @@ For a simple hostname like `localhost` or `example.com`, the variable will retur
 
 - Extracting the top-level domain to track events based on the domain name.
 - Using the domain for analytics, segmentation, or redirect logic.
+
+## Installation
+
+1. Download the `True Hostname.tpl` file
+2. In your GTM container go to `Templates`
+3. Click `New` in the `Variables Templates` section
+4. Click the 3 dots in the right top corner and click `Import`
+5. Choose the file and save the tag
+6. In the end add a new tag by choosing the `True Hostname` from the `Custom` section of the Variable Types.
+7. Save, debug and publish

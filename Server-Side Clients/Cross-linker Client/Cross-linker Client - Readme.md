@@ -92,3 +92,14 @@ Here’s an example of the JavaScript that might be generated:
 
     modifyLinks();
 })();
+```
+
+## Installation
+
+1. Download the `Cross-linker Client.tpl` file
+2. In your GTM container go to `Templates`
+3. Click `New` in the `Client Templates` section
+4. Click the 3 dots in the right top corner and click `Import`
+5. Choose the file and save the tag
+6. In the end add a new tag by choosing the `Cross-linker Client` from the `Custom` section of the Client Types.
+7. Setup, save, debug and publish
