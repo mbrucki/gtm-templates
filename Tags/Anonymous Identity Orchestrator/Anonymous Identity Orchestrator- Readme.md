@@ -1,4 +1,4 @@
-# Cookie Consent and URL Parameter Processor
+# Anonymous Identity Orchestrator
 
 This Google Tag Manager custom tag checks for consent before setting a cookie based on either a URL parameter or a default value. The tag will only set the cookie if the user has given the required consent. If a cookie already exists, it will not be overwritten. 
 
