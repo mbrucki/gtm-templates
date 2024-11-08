@@ -2,7 +2,7 @@
 
 ## Overview
 
-This **Google Tag Manager (GTM) server-side client tag** is responsible for processing incoming requests from the client-side tag to facilitate **cross-domain tracking**. It captures custom user IDs and UTM parameters, generating a script that modifies links on the page to include these tracking values.
+This Google Tag Manager (GTM) server-side client is responsible for processing incoming requests from the client-side tag to facilitate **cross-domain tracking**. It captures custom user IDs and UTM parameters, generating a script that modifies links on the page to include these tracking values.
 
 ## Features
 
