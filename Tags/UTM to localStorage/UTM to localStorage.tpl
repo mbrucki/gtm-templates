@@ -7,8 +7,8 @@
   "securityGroups": [],
   "displayName": "UTM to localStorage",
   "brand": {
-    "id": "brand_dummy",
-    "displayName": ""
+    "id": "Mariusz Brucki",
+    "displayName": "Mariusz Brucki"
   },
   "description": "Saves UTM parameters to localStorage",
   "containerContexts": [
