@@ -1,4 +1,4 @@
-﻿___INFO___
+___INFO___
 
 {
   "type": "CLIENT",
@@ -68,61 +68,133 @@ if (requestPath === '/crosslinker') {
     return;
   }
 
-  // Function expression to generate the JavaScript for link modification
-  const generateScript = function(allowedDomains, cookieName, cookieValue, utmParams) {
-    return "(function() {" +
-      "var cookieName = '" + cookieName + "';" +
-      "var cookieValue = '" + cookieValue + "';" +
-      "var allowedDomains = " + JSON.stringify(allowedDomains) + ";" +
-      "var utmParams = " + JSON.stringify(utmParams) + ";" +  // Pass UTM parameters
+// Function expression to generate the JavaScript for link modification
+const generateScript = function(allowedDomains, cookieName, cookieValue, utmParams) {
+  return "(function() {"
+    + "var cookieName = '" + cookieName + "';"
+    + "var cookieValue = '" + cookieValue + "';"
+    + "var allowedDomains = " + JSON.stringify(allowedDomains) + ";"
+    + "var utmParams = " + JSON.stringify(utmParams) + ";"
 
-      // Function to normalize domain (remove 'www.' and protocol)
-      "function normalizeDomain(domain) {" +
-        "return domain.replace(/^https?:\\/\\//, '').replace(/^www\\./, '').toLowerCase();" +
-      "}" +
+    // Normalize domain without regex
+    + "function normalizeDomain(domain) {"
+      + "domain = String(domain || '').toLowerCase();"
+      + "if (domain.indexOf('http://') === 0) domain = domain.substring(7);"
+      + "if (domain.indexOf('https://') === 0) domain = domain.substring(8);"
+      + "if (domain.indexOf('www.') === 0) domain = domain.substring(4);"
+      + "return domain;"
+    + "}"
 
-      // Function to add a parameter to the URL manually
-      "function addParamToUrl(url, paramName, paramValue) {" +
-        "var urlParts = url.split('?');" +
-        "var baseUrl = urlParts[0];" +
-        "var queryString = urlParts[1] || '';" +
-        "var params = new URLSearchParams(queryString);" +
-        "params.set(paramName, paramValue);" +
-        "return baseUrl + '?' + params.toString();" +
-      "}" +
+    // Allow exact or subdomain match
+    + "function isAllowedHost(host) {"
+      + "var h = normalizeDomain(host);"
+      + "for (var i = 0; i < allowedDomains.length; i++) {"
+        + "var a = normalizeDomain(allowedDomains[i]);"
+        + "if (!a) continue;"
+        + "if (h === a) return true;"
+        + "if (h.length > a.length && h.lastIndexOf('.' + a) === h.length - (a.length + 1)) return true;"
+      + "}"
+      + "return false;"
+    + "}"
 
-      // Function to modify links on the page
-      "function modifyLinks() {" +
-        "var links = document.querySelectorAll('a[href]');" +
-        "Array.prototype.forEach.call(links, function(link) {" +
-          "var urlObj = document.createElement('a');" +
-          "urlObj.href = link.href;" +
+    // Add param and preserve hash
+    + "function addParamToUrl(url, paramName, paramValue) {"
+      + "try {"
+        + "var hashIndex = url.indexOf('#');"
+        + "var hash = '';"
+        + "if (hashIndex >= 0) { hash = url.substring(hashIndex); url = url.substring(0, hashIndex); }"
+        + "var qIndex = url.indexOf('?');"
+        + "var baseUrl = qIndex >= 0 ? url.substring(0, qIndex) : url;"
+        + "var queryString = qIndex >= 0 ? url.substring(qIndex + 1) : '';"
+        + "var params = new URLSearchParams(queryString);"
+        + "params.set(paramName, paramValue);"
+        + "var qs = params.toString();"
+        + "return baseUrl + (qs ? ('?' + qs) : '') + hash;"
+      + "} catch (e) {"
+        + "return url;"
+      + "}"
+    + "}"
 
-          // Normalize the link domain
-          "var normalizedLinkDomain = normalizeDomain(urlObj.hostname);" +
+    + "function decorateUrl(url) {"
+      + "try {"
+        + "var a = document.createElement('a');"
+        + "a.href = url;"
+        + "if (!isAllowedHost(a.hostname)) return null;"
+        + "var out = url;"
+        // cookie
+        + "out = addParamToUrl(out, cookieName, cookieValue);"
+        // UTMs from localStorage
+        + "for (var i = 0; i < utmParams.length; i++) {"
+          + "var p = utmParams[i];"
+          + "var v = null;"
+          + "try { v = localStorage.getItem(p); } catch (e) {}"
+          + "if (v) out = addParamToUrl(out, p, v);"
+        + "}"
+        + "return out;"
+      + "} catch (e) {"
+        + "return null;"
+      + "}"
+    + "}"
 
-          // Normalize allowed domains for comparison
-          "var normalizedAllowedDomains = allowedDomains.map(function(domain) { return normalizeDomain(domain); });" +
+    // Rewrite anchors present now
+    + "function modifyLinks() {"
+      + "var links = document.querySelectorAll('a[href]');"
+      + "for (var i = 0; i < links.length; i++) {"
+        + "var link = links[i];"
+        + "var decorated = decorateUrl(link.href);"
+        + "if (decorated) link.href = decorated;"
+      + "}"
+    + "}"
 
-          // Check if the link points to one of the allowed domains
-          "if (normalizedAllowedDomains.includes(normalizedLinkDomain)) {" +
-            // Add the cookie parameter to the URL
-            "link.href = addParamToUrl(link.href, cookieName, cookieValue);" +
+    // Capture-phase click interception (fixes <button onclick=window.location='...'>)
+    + "function extractTargetUrl(el) {"
+      + "if (!el) return null;"
+      + "if (el.tagName === 'A' && el.href) return el.href;"
+      + "if (el.tagName === 'BUTTON') {"
+        + "var oc = el.getAttribute('onclick') || '';"
+        // simple parser for patterns like: window.location='https://...';
+        + "var key = 'location';"
+        + "var idx = oc.toLowerCase().indexOf(key);"
+        + "if (idx >= 0) {"
+          + "var q1 = oc.indexOf(\"'\");"
+          + "var q2 = oc.indexOf('\"');"
+          + "var q = -1;"
+          + "if (q1 >= 0 && q2 >= 0) q = Math.min(q1, q2);"
+          + "else q = (q1 >= 0 ? q1 : q2);"
+          + "if (q >= 0) {"
+            + "var quoteChar = oc.charAt(q);"
+            + "var end = oc.indexOf(quoteChar, q + 1);"
+            + "if (end > q) return oc.substring(q + 1, end);"
+          + "}"
+        + "}"
+      + "}"
+      + "return null;"
+    + "}"
 
-            // Add UTM parameters to the URL
-            "utmParams.forEach(function(param) {" +
-              "var paramValue = localStorage.getItem(param);" +  // Retrieve UTM value from localStorage
-              "if (paramValue) {" +
-                "link.href = addParamToUrl(link.href, param, paramValue);" +  // Append UTM param
-              "}" +
-            "});" +
-          "}" +
-        "});" +
-      "}" +
+    + "document.addEventListener('click', function(e) {"
+      + "var el = e.target;"
+      + "while (el && el !== document.documentElement) {"
+        + "if (el.tagName === 'A' || el.tagName === 'BUTTON') break;"
+        + "el = el.parentElement;"
+      + "}"
+      + "var url = extractTargetUrl(el);"
+      + "if (!url) return;"
+      + "var decorated = decorateUrl(url);"
+      + "if (!decorated) return;"
+      + "e.preventDefault();"
+      + "e.stopImmediatePropagation();"
+      + "window.location.assign(decorated);"
+    + "}, true);"
 
-      "modifyLinks();" +  // Execute link modification on page load
-    "})();";
-  };
+    // Optional: keep rewriting anchors that appear later (menus, SPA)
+    + "if (window.MutationObserver) {"
+      + "var mo = new MutationObserver(function() { modifyLinks(); });"
+      + "mo.observe(document.documentElement, { childList: true, subtree: true });"
+    + "}"
+
+    + "modifyLinks();"
+  + "})();";
+};
 
   // Set the headers for returning JavaScript
   setResponseHeader('Content-Type', 'application/javascript');
